@@ -1,6 +1,5 @@
 function playStart () {
     Warning = 0
-    challengeInProgress = true
     countdown = 3
     for (let index = 0; index < 3; index++) {
         music.play(music.tonePlayable(587, music.beat(BeatFraction.Half)), music.PlaybackMode.InBackground)
@@ -10,20 +9,15 @@ function playStart () {
     }
     music.play(music.tonePlayable(880, music.beat(BeatFraction.Double)), music.PlaybackMode.InBackground)
     basic.clearScreen()
-    level1()
-    if (challengeInProgress == true) {
-        level2()
-    }
-    if (challengeInProgress == true) {
-        level3()
-    }
-    if (challengeInProgress == true) {
-        level4()
-    }
-    if (challengeInProgress == true) {
-        level5()
-    }
-    waitForStart()
+    challengeInProgress = true
+    lastShuttleComplete = control.millis()
+    shuttleCompleteCount = 0
+    shuttleTime = lvl1ShuttleTime
+}
+function shuttleComplete () {
+    lastShuttleComplete = control.millis()
+    shuttleCompleteCount += 1
+    shuttleTime = lvl1ShuttleTime
 }
 radio.onReceivedNumber(function (receivedNumber) {
     if (receivedNumber == 17) {
@@ -34,26 +28,6 @@ radio.onReceivedNumber(function (receivedNumber) {
     	
     }
 })
-function level4 () {
-    for (let index = 0; index < 8; index++) {
-        if (challengeInProgress == false) {
-            break;
-        }
-        buttonPressedInTime = false
-        // 1120 x 5ms = 5.6s
-        for (let index = 0; index < 1120; index++) {
-            // 5ms
-            basic.pause(5)
-            if (input.buttonIsPressed(Button.A)) {
-                buttonPressedInTime = true
-            }
-        }
-        if (index == 7) {
-            levelComplete = true
-        }
-        checkButtonPressedInTime()
-    }
-}
 function checkButtonPressedInTime () {
     if (buttonPressedInTime) {
         if (levelComplete == true) {
@@ -76,27 +50,6 @@ function checkButtonPressedInTime () {
         }
     }
 }
-function level1 () {
-    for (let index = 0; index < 7; index++) {
-        if (challengeInProgress == false) {
-            break;
-        }
-        buttonPressedInTime = false
-        // 1380 x 5ms = 6.9s
-        for (let index = 0; index < 1380; index++) {
-            // 5ms
-            basic.pause(5)
-            if (input.buttonIsPressed(Button.A)) {
-                radio.sendNumber(17)
-                buttonPressedInTime = true
-            }
-        }
-        if (index == 6) {
-            levelComplete = true
-        }
-        checkButtonPressedInTime()
-    }
-}
 function endGame () {
     challengeInProgress = false
     for (let index = 0; index < 4; index++) {
@@ -105,87 +58,40 @@ function endGame () {
         music.play(music.tonePlayable(156, music.beat(BeatFraction.Half)), music.PlaybackMode.InBackground)
         basic.showIcon(IconNames.No)
     }
-    waitForStart()
 }
-function level5 () {
-    for (let index = 0; index < 4; index++) {
-        if (challengeInProgress == false) {
-            break;
-        }
-        buttonPressedInTime = false
-        // 1100 x 5ms = 5.5s
-        for (let index = 0; index < 1100; index++) {
-            // 5ms
-            basic.pause(5)
-            if (input.buttonIsPressed(Button.A)) {
-                buttonPressedInTime = true
-            }
-        }
-        if (index == 3) {
-            levelComplete = true
-        }
+input.onButtonPressed(Button.A, function () {
+    if (challengeInProgress == true) {
+        radio.sendNumber(17)
+        buttonPressedInTime = true
+    } else {
+        radio.sendNumber(84)
+        playStart()
     }
-    checkButtonPressedInTime()
-}
-function waitForStart () {
-    while (true) {
-        if (input.buttonIsPressed(Button.A)) {
-            radio.sendNumber(84)
-            playStart()
-            if (challengeInProgress == true) {
-                break;
-            }
-        }
-        basic.pause(5)
-    }
-}
-function level3 () {
-    for (let index = 0; index < 8; index++) {
-        if (challengeInProgress == false) {
-            break;
-        }
-        buttonPressedInTime = false
-        // 1220 x 5ms = 6.1s
-        for (let index = 0; index < 1280; index++) {
-            // 5ms
-            basic.pause(5)
-            if (input.buttonIsPressed(Button.A)) {
-                buttonPressedInTime = true
-            }
-        }
-        if (index == 7) {
-            levelComplete = true
-        }
-        checkButtonPressedInTime()
-    }
-}
-function level2 () {
-    for (let index = 0; index < 8; index++) {
-        if (challengeInProgress == false) {
-            break;
-        }
-        buttonPressedInTime = false
-        // 1280 x 5ms = 6.4s
-        for (let index = 0; index < 1280; index++) {
-            // 5ms
-            basic.pause(5)
-            if (input.buttonIsPressed(Button.A)) {
-                buttonPressedInTime = true
-            }
-        }
-        if (index == 7) {
-            levelComplete = true
-        }
-        checkButtonPressedInTime()
-    }
-}
+})
 let levelComplete = false
 let buttonPressedInTime = false
+let shuttleTime = 0
+let shuttleCompleteCount = 0
+let lastShuttleComplete = 0
 let countdown = 0
 let Warning = 0
+let lvl1ShuttleTime = 0
 let challengeInProgress = false
 radio.setGroup(14)
 radio.sendNumber(0)
 challengeInProgress = false
-Warning = 0
-waitForStart()
+lvl1ShuttleTime = 2
+let lvl2ShuttleTime = 1
+let lvl3ShuttleTime = 1
+control.inBackground(function () {
+	
+})
+loops.everyInterval(100, function () {
+    if (challengeInProgress == true) {
+        if (control.millis() - lastShuttleComplete > shuttleTime * 1000) {
+            checkButtonPressedInTime()
+            buttonPressedInTime = false
+            shuttleComplete()
+        }
+    }
+})
