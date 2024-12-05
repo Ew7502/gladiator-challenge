@@ -24,8 +24,6 @@ radio.onReceivedNumber(function (receivedNumber) {
         buttonPressedInTime = true
     } else if (receivedNumber == 84) {
         playStart()
-    } else {
-    	
     }
 })
 function checkButtonPressedInTime () {
@@ -80,9 +78,9 @@ let challengeInProgress = false
 radio.setGroup(14)
 radio.sendNumber(0)
 challengeInProgress = false
-lvl1ShuttleTime = 2
-let lvl2ShuttleTime = 1
-let lvl3ShuttleTime = 1
+lvl1ShuttleTime = 6.9
+let lvl2ShuttleTime = 6.4
+let lvl3ShuttleTime = 6
 control.inBackground(function () {
 	
 })
